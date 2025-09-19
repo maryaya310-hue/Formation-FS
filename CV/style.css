@@ -1,0 +1,84 @@
+@media (max-width:768px) {
+     .grid {grid-template-columns: 1fr;}
+        
+}
+.grid {grid-template-columns: 1fr 2fr;}
+ body {
+      font-family: Cambria, serif;
+      margin: 0;
+      background: #f9f9f9;
+      color: #333;
+    }  
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 2fr ;
+      @media (max-widt:768pw) {
+        .grid {grid-template-columns: 1fr;}
+        
+      }
+      gap: 20px;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #b6add9;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 12px;
+    }
+
+    .left {
+      padding: 20px;
+    }
+
+    .left {
+      background: #f0f0f0;
+      border-radius: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      color: #2c3e50;
+    }
+
+    h2 {
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 5px;
+      margin-top: 20px;
+      font-size: 20px;
+      color: #444;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      margin: 8px 0;
+    }
+
+    .job {
+      margin-bottom: 20px;
+    }
+
+    .job h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #2c3e50;
+    }
+
+    .job span {
+      font-size: 14px;
+      color: #777;
+    }
+    .profile-pic {
+  width: 120px;       /* size of image */
+  height: 120px;
+  border-radius: 50%; /* makes it round */
+  /*object-fit: cover;  /* crops nicely if not square */
+  display: block;
+  margin: 0 auto 20px; /* center + space below */
+  border: 3px solid #ccc; /* optional frame */
+}
+
