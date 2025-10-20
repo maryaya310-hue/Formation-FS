@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Caisse Enregistreuse — Maryam Shopping </title>
+  <link rel="icon" type="image/png" href="photo.jpg">
+   <div class="profile-pic">
+    <img src="photo.jpg" alt="Profile Picture">
+  </div>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width: 900px; margin: 30px auto; padding: 0 16px; color:#111; }
+    h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .grid { display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items:end; margin-bottom:14px; }
+    label { display:block; font-size:0.85rem; margin-bottom:4px; }
+    input[type="text"], input[type="number"] { width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; }
+    button { padding:8px 12px; border-radius:8px; border: none; background:#0b76ef; color:white; cursor:pointer; }
+    button.secondary { background:#6c757d; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { padding:8px 6px; border-bottom:1px solid #eee; text-align:left; }
+    .right { text-align:right; }
+    .total { font-weight:700; font-size:1.1rem; margin-top:12px; }
+    .message { margin-top:12px; padding:10px; border-radius:8px; background:#f1f7ff; color:#032b57; }
+    .small { font-size:0.9rem; color:#555; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .remove-btn { background:#e03b3b; }
+    .flex-row { display:flex; gap:10px; align-items:center; }
+     .profile-pic {
+      text-align: center;
+      margin: 20px 0;
+       width: 180px;
+      height: 190px;
+      border-radius: 100%;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Caisse enregistreuse — interface</h1>
+
+  <!-- Ajout d'articles -->
+  <section>
+    <div class="grid">
+      <div>
+        <label for="itemName">Nom de l'article</label>
+        <input id="itemName" type="text" placeholder="Ex: Pomme" />
+      </div>
+      <div>
+        <label for="itemPrice">Prix (dh)</label>
+        <input id="itemPrice" type="number" min="0" step="0.01" placeholder="1.20" />
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button id="addItemBtn">Ajouter l'article</button>
+      </div>
+    </div>
+
+    <div class="small">Tu peux ajouter plusieurs articles. Clique sur la croix pour supprimer un article.</div>
+  </section>
+
+  <!-- Réduction -->
+  <section style="margin-top:14px;">
+    <div style="display:flex; gap:10px; align-items:end; flex-wrap:wrap;">
+      <div style="min-width:160px;">
+        <label for="discountPercent">Réduction (%)</label>
+        <input id="discountPercent" type="number" min="0" max="100" step="0.1" placeholder="10" />
+      </div>
+      <div style="align-self:stretch;">
+        <button id="applyDiscountBtn" class="secondary">Appliquer la réduction</button>
+      </div>
+      <div style="align-self:stretch;">
+        <button id="resetDiscountBtn" class="secondary">Réinitialiser la réduction</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Panier -->
+  <section style="margin-top:18px;">
+    <h2 style="font-size:1.1rem; margin-bottom:8px;">Panier</h2>
+    <div id="cartContainer">
+      <table id="cartTable" aria-live="polite">
+        <thead>
+          <tr><th>Article</th><th>Prix (dh)</th><th></th></tr>
+        </thead>
+        <tbody id="cartBody">
+          <!-- lignes ajoutées dynamiquement -->
+        </tbody>
+      </table>
+
+      <div class="total" id="totalLine">Total : 0.00 dh</div>
+      <div class="small" id="discountLine">Réduction appliquée : 0 %</div>
+    </div>
+  </section>
+
+  <!-- Paiement -->
+  <section style="margin-top:18px;">
+    <h2 style="font-size:1.1rem; margin-bottom:8px;">Paiement</h2>
+    <div class="flex-row" style="gap:8px;">
+      <div style="flex:1; max-width:220px;">
+        <label for="cashGiven">Espèces données (dh)</label>
+        <input id="cashGiven" type="number" min="0" step="0.01" placeholder="10.00" />
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <div class="actions">
+          <button id="payBtn">Payer</button>
+          <button id="clearCartBtn" class="secondary">Vider le panier</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="message" class="message" style="display:none;"></div>
+  </section>
+
+  <script>
+   // --- Classe qui représente notre cash register
+class CashRegister { // Déclaration de la classe
+
+  constructor() { // Méthode spéciale appelée quand on crée un nouvel objet
+    this.cart = [];        // Tableau des articles (vide au début)
+    this.discountRate = 0; // Taux de réduction (0 = aucune réduction)
+  }
+
+  addItem(name, price) { // Méthode pour ajouter un article
+    this.cart.push({ name, price: Number(price) }); // Ajoute {nom, prix} au tableau
+  }
+
+  removeItem(i) { // Méthode pour supprimer un article selon son index
+    this.cart.splice(i, 1); // Supprime 1 élément du tableau à la position i
+  }
+
+  clearCart() { // Vider complètement le panier
+    this.cart = [];        // Réinitialise le panier
+    this.discountRate = 0; // Supprime aussi toute réduction
+  }
+
+  setDiscountRateFromPercent(p) { // Fixer une réduction en %
+    this.discountRate = p / 100; // Convertit le % en taux (ex: 10 → 0.1)
+  }
+
+  resetDiscount() { // Remettre la réduction à zéro
+    this.discountRate = 0;
+  }
+
+  computeTotal() { // Calculer le total numérique
+    return this.cart.reduce((acc, item) => acc + item.price, 0) // Somme des prix
+           * (1 - this.discountRate); // Application de la réduction
+  }
+
+  getTotalFormatted() { // Renvoie le total formaté avec 2 décimales
+    return this.computeTotal().toFixed(2);
+  }
+
+  pay(cash) { // Gérer un paiement
+    let total = this.computeTotal(); // Calcule le total à payer
+    if (cash >= total) { // Si le client a donné assez d’argent
+      return { ok: true, msg: `Paiement accepté ✅ Monnaie : ${(cash - total).toFixed(2)} dh` };
+    } else { // Sinon (argent insuffisant)
+      return { ok: false, msg: `Fonds insuffisants ❌ Il manque ${(total - cash).toFixed(2)} dh` };
+    }
+  }
+}
+
+// -------- logique DOM / interaction --------
+
+const caisse = new CashRegister(); // Création de la caisse
+const cartBody = document.getElementById("cartBody"); // Récupère le <tbody>
+const totalLine = document.getElementById("totalLine"); // Récupère l’élément total
+const discountLine = document.getElementById("discountLine"); // Récupère l’élément réduction
+const message = document.getElementById("message"); // Récupère la zone message
+
+function render() { // Met à jour l’affichage
+  cartBody.innerHTML = ""; // Vide le tableau HTML
+
+  caisse.cart.forEach((item, i) => { // Parcourt chaque article du panier
+    cartBody.innerHTML += `
+      <tr>
+        <td>${item.name}</td> <!-- Affiche le nom -->
+        <td>${item.price.toFixed(2)} dh</td> <!-- Prix avec 2 décimales -->
+        <td><button class="btn btn-sm btn-danger" onclick="removeItem(${i})">X</button></td> <!-- Bouton supprimer -->
+      </tr>`;
+  });
+
+  totalLine.textContent = `Total : ${caisse.getTotalFormatted()} dh`; // Met à jour le total
+  discountLine.textContent = `Réduction appliquée : ${(caisse.discountRate * 100).toFixed(1)} %`; // Affiche réduction
+}
+
+function showMessage(text, ok) { // Affiche un message de succès ou erreur
+  message.className = `alert ${ok ? "alert-success" : "alert-danger"}`; // Choisit couleur selon ok
+  message.textContent = text; // Ajoute le texte
+  message.classList.remove("d-none"); // Rend visible
+}
+
+// --- Boutons et interactions ---
+
+document.getElementById("addItemBtn").onclick = () => { // Quand on clique "Ajouter"
+  const name = document.getElementById("itemName").value || "Article"; // Récupère nom
+  const price = parseFloat(document.getElementById("itemPrice").value) || 0; // Récupère prix
+  caisse.addItem(name, price); // Ajoute l’article
+  render(); // Rafraîchit affichage
+};
+
+document.getElementById("applyDiscountBtn").onclick = () => { // Appliquer une réduction
+  const d = parseFloat(document.getElementById("discountPercent").value) || 0; // Récupère %
+  caisse.setDiscountRateFromPercent(d); // Fixe réduction
+  render(); // Rafraîchit
+};
+
+document.getElementById("resetDiscountBtn").onclick = () => { // Réinitialiser réduction
+  caisse.resetDiscount();
+  render();
+};
+
+document.getElementById("payBtn").onclick = () => { // Quand on clique "Payer"
+  const c = parseFloat(document.getElementById("cashGiven").value) || 0; // Récupère argent donné
+  const r = caisse.pay(c); // Vérifie paiement
+  showMessage(r.msg, r.ok); // Affiche le message
+};
+
+document.getElementById("clearCartBtn").onclick = () => { // Vider le panier
+  caisse.clearCart();
+  render();
+};
+
+window.removeItem = (i) => { // Fonction globale appelée par le bouton X
+  caisse.removeItem(i);
+  render();
+};
+
+render(); // Appel initial (affiche un panier vide au départ)
+
+  </script>
+</body>
+</html>
